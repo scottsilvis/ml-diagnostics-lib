@@ -1,11 +1,6 @@
 # =========================
 # Data (local / large files)
 # =========================
-data/
-datasets/
-raw_data/
-processed_data/
-
 *.csv
 *.csv.gz
 *.tsv
@@ -13,6 +8,7 @@ processed_data/
 *.feather
 *.h5
 *.hdf5
+/data/mimic-iv/*.txt
 
 # =========================
 # Databases
