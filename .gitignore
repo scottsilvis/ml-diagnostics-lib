@@ -1,10 +1,11 @@
-=========================
+# =========================
 # Data (local / large files)
 # =========================
 data/
 datasets/
 raw_data/
 processed_data/
+
 *.csv
 *.csv.gz
 *.tsv
@@ -93,7 +94,5 @@ dist/
 *.egg-info/
 .eggs/
 
-# =========================
-# Optional: keep empty folders
-# =========================
+# Optional: keep empty folders (if you use .gitkeep files)
 !.gitkeep

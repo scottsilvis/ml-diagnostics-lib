@@ -1,7 +1,4 @@
 -- 03_sanity_checks.sql
--- Sanity checks on the final feature table
-
--- 03_sanity_checks.sql
 
 -- 1) One row per hadm_id
 SELECT
