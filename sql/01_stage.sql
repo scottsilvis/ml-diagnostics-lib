@@ -56,13 +56,14 @@ DROP TABLE IF EXISTS stg_micro_events;
 CREATE TABLE stg_micro_events AS
 SELECT
   CAST(NULLIF(subject_id, '') AS INTEGER) AS subject_id,
-  CAST(NULLIF(hadm_id, '') AS INTEGER) AS hadm_id,
   CAST(julianday(date(NULLIF(chartdate, ''))) AS INTEGER) AS event_day,
   LOWER(TRIM(org_name)) AS org_name_l
 FROM raw_micro_events
-WHERE NULLIF(subject_id, '') IS NOT NULL
-  AND NULLIF(hadm_id, '') IS NOT NULL
-  AND NULLIF(chartdate, '') IS NOT NULL;
+WHERE subject_id IS NOT NULL
+  AND chartdate IS NOT NULL
+  AND org_name IS NOT NULL
+  AND TRIM(org_name) <> ''
+  AND LOWER(TRIM(org_name)) <> 'cancelled';
 
 -- ===============================
 -- Staging tables for omr
@@ -83,6 +84,4 @@ WHERE NULLIF(subject_id, '') IS NOT NULL
   AND NULLIF(result_name, '') IS NOT NULL;
 
 
-CREATE INDEX IF NOT EXISTS idx_adm_hadm_day   ON stg_admissions(hadm_id, admitday, dischday);
-CREATE INDEX IF NOT EXISTS idx_micro_hadm_day ON stg_micro_events(hadm_id, event_day);
 

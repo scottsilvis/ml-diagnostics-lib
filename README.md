@@ -1,101 +1,261 @@
 # ml-diagnostics-lib
 
-A small Python library for fitting baseline classification models and evaluating them using diagnostic-focused metrics rather than leaderboard optimization.
+A personal modeling library for learning and implementing statistical and machine-learning techniques using realistic clinical datasets derived from MIMIC-IV.
 
-The primary use case is understanding when a simple model is sufficient and when increased model flexibility is structurally justified, using tools such as calibration analysis, residual inspection, and ranking stability.
+The goal of this project is to build a reusable toolkit of modeling workflows, diagnostics, and evaluation strategies while solving artificial but realistic prediction problems.
 
-This repository is intentionally minimal and model-agnostic. It is designed for iterative experimentation and extension rather than end-to-end production pipelines.
+Rather than focusing on a single research question, this repository serves as a catalog of modeling patterns, each implemented end-to-end with:
+
+- SQL feature engineering
+- reproducible data pipelines
+- interpretable baseline models
+- evaluation and diagnostics
+- reusable Python modules
 
 ---
 
-## Scope and Design Philosophy
+## Project Goals
 
-- Emphasizes model diagnostics over metric maximization
-- Treats logistic regression as a reference model
-- Uses more flexible models (random forest, gradient boosting) as comparators, not defaults
-- Assumes fixed feature sets and no feature leakage
-- Prioritizes out-of-fold predictions for evaluation
+This project is designed to practice and preserve reusable modeling techniques.
 
-This library is not intended for:
-- Automated model selection
-- Hyperparameter tuning competitions
-- Deep learning workflows
-- Domain-specific inference or causal claims
+Each case study demonstrates how to:
+
+- Construct features from relational healthcare datasets
+- Train interpretable statistical models
+- Evaluate models using appropriate metrics
+- Perform model diagnostics
+- Build reproducible data science pipelines
+- Package reusable modeling utilities into a Python library
+
+The long-term goal is to maintain a library of modeling patterns that can be reused across future projects.
+
+---
+
+## Data Source
+
+This project uses data derived from the MIMIC-IV clinical database.
+
+MIMIC-IV is a large, publicly available database containing de-identified health-related data associated with patients admitted to intensive care units.
+
+Because of licensing restrictions:
+
+- The MIMIC-IV data is not included in this repository.
+- Only schema definitions are stored here.
+
+Users who have access to MIMIC-IV can recreate the dataset using the SQL and pipeline scripts provided.
 
 ---
 
 ## Repository Structure
 
 ```text
-ml-diagnostics-lib/
-  data.py                 
-  splits.py               
-  metrics.py              
-  diagnostics/
-    calibration.py        
-    residuals.py          
-    ranking.py            
-  models/
-    logistic.py           
-    random_forest.py      
-    gradient_boost.py     
-  run_compare.py          
+ml-diagnostics-lib
+│
+├── data
+│   ├── mimic-iv
+│   │   ├── admissions.csv
+│   │   ├── microbiologyevents.csv
+│   │   ├── patients.csv
+│   │   └── ...
+│   │
+│   ├── processed
+│   │   └── feat_admission_micro_los.csv
+│   │
+│   └── mimic.sqlite
+│
+├── docs
+│   ├── decisions.md
+│   ├── methodology.md
+│   └── onepager.md
+│
+├── notebooks
+│   └── 01_microbiology_exploration.ipynb
+│
+├── scripts
+│   ├── build_sqlite_db.py
+│   └── model_micro_los.py
+│
+├── sql
+│   ├── 01_stage.sql
+│   ├── 02_features.sql
+│   └── 03_sanity_checks.sql
+│
+├── src/ml_diagnostics_lib
+│   ├── datasets
+│   ├── features
+│   ├── metrics
+│   ├── models
+│   │   ├── linear.py
+│   │   └── model.py
+│   │
+│   ├── training
+│   └── utils
+│
+└── tests       
 ```
 
 ---
 
-## Core Concepts
+## Workflow
 
-### Reference Model
+Each modeling exercise follows a reproducible pipeline.
 
-Logistic regression is treated as the baseline against which all structural comparisons are made.
+### 1. Build the SQLite database
 
-### Diagnostic Signals
+Raw MIMIC files are converted into a local SQLite database.
 
-Model evaluation focuses on:
-- Calibration behavior
-- Residual structure
-- Ranking stability across resamples
-- Diminishing returns with increased complexity
+```
+python scripts/build_sqlite_db.py
+```
 
-Performance metrics (e.g., PR-AUC) are used descriptively, not prescriptively.
+### 2. Construct feature tables
+
+Feature engineering is performed using SQL.
+
+The pipeline includes:
+
+1. Stage tables
+2. Feature construction
+3. Sanity checks
+
+
+```
+sql/
+ ├── 01_stage.sql
+ ├── 02_features.sql
+ └── 03_sanity_checks.sql
+```
+
+These scripts produce analysis-ready feature tables.
+
+### 3. Run a model
+
+Model training scripts are located in scripts/.
+
+Example:
+
+```
+python scripts/model_micro_los.py
+```
+
+This script loads the engineered feature table and trains baseline models.
 
 ---
 
-## Typical Usage Pattern
+## Example Case Study
 
-1. Load baseline dataset
-2. Generate out-of-fold predictions for each model
-3. Apply shared diagnostic functions
-4. Compare structural behavior across models
+Predicting Length of Stay from Microbiology Signals
+
+This experiment explores whether simple microbiology indicators recorded during a hospital stay can help explain variation in length of stay (LOS).
+
+Features include indicators such as:
+
+- presence of E. coli
+- presence of Staphylococcus aureus
+- presence of influenza
+- admission characteristics
+- baseline demographic information
+
+The target variable is:
+
+```
+log(length_of_stay_days)
+```
+
+The model uses:
+- linear regression
+- grouped cross-validation
+- residual diagnostics
+
+This experiment serves as a practice example for:
+
+- feature construction from relational clinical data
+- interpretable regression modeling
+- model diagnostics
 
 ---
 
-## Outputs
+## Library Components
 
-Model runners return:
-- Out-of-fold predicted probabilities
-- Fold identifiers
-- Fold-level metric summaries
-- Optional model artifacts
+The reusable Python package lives in:
 
-Diagnostic functions return plot-ready data structures and summary statistics.
+```
+src/ml_diagnostics_lib
+```
+
+### datasets
+
+Dataset loaders and helpers for reading feature tables.
+
+### features
+
+Utilities related to feature construction and metadata.
+
+### models
+
+Reusable model implementations, including:
+
+- linear regression
+- logistic regression
+- baseline statistical models
+
+### metrics
+
+Evaluation utilities and model scoring functions.
+
+### training
+
+Model training pipelines and cross-validation helpers.
+
+### utils
+
+General utilities such as feature loading.
 
 ---
 
-What This Library Supports
-- Defensible conclusions such as:
-- When linear decision boundaries are insufficient
-- Whether nonlinear models reduce systematic residual patterns
-- How calibration and ranking trade off across model classes
-- When performance gains plateau with added complexity
+## Planned Modeling Exercises
 
-What This Library Does Not Claim
-- Clinical validity
-- Causal interpretation
-- Optimal model selection
-- Production readiness
+Future case studies will explore additional modeling techniques, including:
+- logistic regression for binary clinical outcomes
+- calibration and probability diagnostics
+- regularized models (ridge, lasso, elastic net)
+- sparse text modeling using TF-IDF
+- combined structured + text models
+- model comparison and selection strategies
 
-## Status
+Each case study will focus on learning and documenting a modeling technique rather than solving a single clinical research question.
 
-This library is under active iteration and currently scoped to a single dataset. Interfaces are expected to evolve as diagnostics are refined.
+## Reproducibility
+
+The project is designed to be reproducible locally.
+
+Dependencies are listed in:
+
+```
+requirements.txt
+```
+
+Install them with:
+
+```
+pip install -r requirements.txt
+```
+## Why This Project Exists
+
+Many machine learning examples online focus on high-level modeling libraries without showing the full workflow.
+
+This project intentionally emphasizes:
+
+- realistic relational data
+- SQL feature engineering
+- interpretable baseline models
+- diagnostic analysis
+- reproducible pipelines
+
+The goal is to build intuition about how statistical modeling behaves in real datasets.
+
+## License
+
+This repository contains no protected clinical data.
+
+Users must obtain their own access to MIMIC-IV to recreate the dataset.
